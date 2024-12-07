@@ -75,9 +75,9 @@ class AnalystWorkflow(WorkflowInterface):
                 updated_style={},
                 updated_content=""
             )
+            latest_event = None
             for event in self.workflow_instance.stream(initial_state, config, stream_mode="values"):
                 latest_event = event
-            latest_event = None
             return thread_id, latest_event
 
     def chat(self, thread_id: str, message: dict, file: Optional[str] = None):
