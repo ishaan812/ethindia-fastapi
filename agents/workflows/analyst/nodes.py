@@ -14,8 +14,8 @@ from agents.constants.prompts import MERMAID_GENERATION_SYSTEM_PROMPT, QUERY_GEN
 def start_workflow(state):
     return {
         "messages": [
-            BaseMessage(content="Hey, I'm Morgan, your AI Business Analyst. Let me help you map your business out and seperate it into different compoents to modularise and make a plan to bring you onchain.",
-                        role="system", type="text")
+            BaseMessage(content="Hey, I'm Logan, your AI Business Architect. Let me help you map your business out and seperate it into different compoents to modularise and make a plan to bring you onchain.",
+                        role="system", type="text",name="Logan")
         ]
     }
 
@@ -89,7 +89,7 @@ def context_generator(state):
     return {
         "messages": [
             BaseMessage(content="Searching the web for more information based on the queries generated...",
-                        role="system", type="tool")
+                        role="system", type="tool", name="Logan")
         ],
         "context": context
     }
@@ -120,7 +120,7 @@ def mermaid_generator(state):
     return {
         "messages": [
             BaseMessage(content="I have generated a mermaid diagram based on the queries you provided. Please review it and let me know if you would like to proceed.",
-                        role="system", type="moveToResearcher")
+                        role="system", type="moveToResearcher", name="Logan")
         ],
         "mermaid_diagram": res.get("mermaid_diagram_string")
     }
@@ -131,8 +131,8 @@ def approval_node(state):
 def end_workflow(state):
     return {
         "messages": [
-            BaseMessage(content="Thanks! Its been a pleasure working with you, you can now talk to my colleague Clyde",
-                        role="system", type="text")
+            BaseMessage(content="Thanks! Its been a pleasure working with you, you can now talk to my colleague Rhea",
+                        role="system", type="text", name="Logan")
         ]
     }
 

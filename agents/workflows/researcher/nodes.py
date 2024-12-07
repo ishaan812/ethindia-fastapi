@@ -17,8 +17,8 @@ from agents.utils.blogs import addBlogPost
 def start_workflow(state):
     return {
         "messages": [
-            BaseMessage(content="Hey, I'm Alex, your AI Web3 Researcher. The mermaid diagram you've made is nice, let me see how I can help you get your business onchain",
-                        role="system", type="text")
+            BaseMessage(content="Hey, I'm Rhea, your nerdy AI Web3 Researcher. The mermaid diagram, Logan made along with you've is nice, let me see how I can help you get your business onchain",
+                        role="system", type="text",name="Rhea")
         ]
     }
 
@@ -55,7 +55,7 @@ def usecase_generator(state):
     return {
         "messages": [
             BaseMessage(content="Here are some usecases I think you might want to get onchain for",
-                        role="system", type="options")
+                        role="system", type="options", name="Rhea")
         ],
         "options": res.get("ways", "")
     }
@@ -67,7 +67,7 @@ def usecase_buffer(state):
     if user_input.content.lower() == "no":
         return {
             "messages": [
-                BaseMessage(content="Oki leme see what else I can think of if you dont like any of these. Select the one you like.", type= "text", role="system")
+                BaseMessage(content="Oki leme see what else I can think of if you dont like any of these. Select the one you like.", type= "text", role="system", name="Rhea")
             ],
         }
     else:
@@ -114,7 +114,7 @@ def usecase_buffer(state):
 
         return {
             "messages": [
-                BaseMessage(content="Nice, good choice! you should continue to talk to Kanye now to figure out how you can embed this, he's our tech guy!", type= "moveToCoder", role="system")
+                BaseMessage(content="Nice, good choice! you should continue to talk to Kanye now to figure out how you can embed this, he's our tech guy!", type= "moveToCoder", role="system", name="Rhea")
             ],
             "altered_mermaid": altered_image,
             "output": options[int(user_input.content)], 

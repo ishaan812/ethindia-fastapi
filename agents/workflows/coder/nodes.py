@@ -10,7 +10,7 @@ def start_workflow(state):
     return {
         "messages": [
             BaseMessage(content="Yo, I'm Kanye, I’m the blockchain Yeezy, contracts stay breezy—code so tight, even bugs get queasy. Let's get started on your project.",
-                        role="system", type="text")
+                        role="system", type="text",name="Kanye")
         ]
     }
 
@@ -53,7 +53,7 @@ def plan_smart_contract(state):
     return {
         "messages": [
             BaseMessage(content="Yo, here’s the plan for the smart contract, let me know if it’s fire or if we need to tweak it. You got thoughts, throw ‘em in. Let’s make this legendary. Type continue to proceed.",
-                        role="system", type="text"),
+                        role="system", type="text", name="Kanye"),
             BaseMessage(content=json.dumps(res.get("plan", "")), role="system", type="default")
         ],
         "plan": res.get("plan", ""),
@@ -95,7 +95,7 @@ def code_node(state):
     return {
         "messages": [
             BaseMessage(content="Yo, here’s the code, let me know if it’s fire or if we need to tweak it. You got thoughts, throw ‘em in. Let’s make this legendary. Type ``continue`` to deploy it on the chain.",
-                        role="system", type="text"),
+                        role="system", type="text", name="Kanye"),
         ],
         "generated_code": res.get('code', ''),
         "code_messages": code_messages
