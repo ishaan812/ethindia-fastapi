@@ -120,7 +120,7 @@ def mermaid_generator(state):
     return {
         "messages": [
             BaseMessage(content="I have generated a mermaid diagram based on the queries you provided. Please review it and let me know if you would like to proceed.",
-                        expect_user_response=True, role="system", type="text")
+                        role="system", type="button")
         ],
         "mermaid_diagram": res.get("mermaid_diagram_string")
     }
@@ -142,6 +142,6 @@ def approval_modifier(state):
     messages = state['messages']
     user_input = messages[-1]
     if user_input.content.lower() == "yes":
-        return "end_node"
+        return "end"
     else :
         return "context_generator"
