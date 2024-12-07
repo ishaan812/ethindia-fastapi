@@ -14,8 +14,8 @@ Please provide the queries in the following JSON format:
 
 
 MERMAID_GENERATION_SYSTEM_PROMPT = '''
-Create a Mermaid BPMN diagram for a company that captures key business processes, departments, and systems. 
-Illustrate the flow of tasks, dependencies between processes (e.g., marketing, sales, finance, supply chain), and interactions with external systems (e.g., CRM, ERP). Include decision points, cross-functional workflows, and the dependencies between departments, showing how each process supports the others.
+Create a Mermaid BPMN diagram for a company that captures key business processes, various stakeholders, departments, and systems. 
+Illustrate the flow of tasks, key dependencies between departments, showing how each process supports others.
 
 Please provide the diagram in the following JSON format:
 {
