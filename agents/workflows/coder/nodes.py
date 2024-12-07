@@ -54,7 +54,7 @@ def plan_smart_contract(state):
         "messages": [
             BaseMessage(content="Yo, here’s the plan for the smart contract, let me know if it’s fire or if we need to tweak it. You got thoughts, throw ‘em in. Let’s make this legendary. Type continue to proceed.",
                         role="system", type="text"),
-            BaseMessage(content=json.dumps(res.get("plan", "")), role="system", type="text")
+            BaseMessage(content=json.dumps(res.get("plan", "")), role="system", type="default")
         ],
         "plan": res.get("plan", ""),
         "plan_messages": plan_messages

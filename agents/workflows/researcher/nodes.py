@@ -114,7 +114,7 @@ def usecase_buffer(state):
 
         return {
             "messages": [
-                BaseMessage(content="Nice, good choice! you should continue to talk to Kanye now to figure out how you can embed this, he's our tech guy!", type= "text", role="system")
+                BaseMessage(content="Nice, good choice! you should continue to talk to Kanye now to figure out how you can embed this, he's our tech guy!", type= "moveToCoder", role="system")
             ],
             "altered_mermaid": altered_image,
             "output": options[int(user_input.content)], 
