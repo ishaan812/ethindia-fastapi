@@ -5,16 +5,19 @@ from langgraph.checkpoint.memory import MemorySaver
 from fastapi import HTTPException
 from agents.workflows.analyst.index import AnalystWorkflow
 from agents.workflows.researcher.index import ResearchWorkflow
+from agents.workflows.coder.index import CoderWorkflow
 
 class WorkflowOrchestrator:
     def __init__(self):
         self.checkpointer = MemorySaver()
         self.AnalystWorkflow = AnalystWorkflow(self.checkpointer)
         self.ResearcherWorkflow = ResearchWorkflow(self.checkpointer)
+        self.CoderWorkflow = CoderWorkflow(self.checkpointer)
         # Mapping of workflows to initialization functions
         self.agents: Dict[str, Type[WorkflowInterface]] = {
             "analyst": self.AnalystWorkflow,
-            "researcher": self.ResearcherWorkflow
+            "researcher": self.ResearcherWorkflow,
+            "coder": self.CoderWorkflow
         }
 
     def start(self, workflow_name: str, message: Optional[Union[dict, str, None]] = None):

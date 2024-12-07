@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Annotated, List, Literal, Optional, TypedDict
 from fastapi import HTTPException
 from langchain_core.messages import BaseMessage
@@ -7,16 +8,17 @@ from langgraph.graph.message import add_messages
 from agents.utils.helpers import is_json, stripped_uuid4
 from agents.workflows.index import WorkflowInterface
 from operator import add
-from agents.workflows.coder.nodes import approval_modifier, approval_node, context_generator, end_workflow, mermaid_generator, start_workflow, process_input
+from agents.workflows.coder.nodes import code_approval_modifier, code_node, deploy_smart_contract, end_workflow, get_feedback, plan_approval_modifier, plan_smart_contract, start_workflow, process_input
 
 
 class WorkflowState(TypedDict):
     messages: Annotated[list, add_messages]
-    user_prompt: str
-    company_name: str
-    context: str
-    mermaid_diagram: str
-    file: any
+    usecase: str
+    feature_list: list[str]
+    plan_messages: List
+    code_messages: List
+    generated_code: str
+    plan: dict
 
 
 class CoderWorkflow(WorkflowInterface):
@@ -24,7 +26,7 @@ class CoderWorkflow(WorkflowInterface):
         self.graph = StateGraph(WorkflowState)
         self._initialize_graph()
         self.workflow_instance = self.graph.compile(
-            interrupt_before=["process_input", "approval_node"],
+            interrupt_after=["start", "plan_smart_contract", "code_node"],
             checkpointer=Checkpointer,
         )
         # self._save_workflow_diagram(os.path.dirname(__file__))
@@ -33,16 +35,21 @@ class CoderWorkflow(WorkflowInterface):
         """Setup the state graph for the workflow process."""
         self.graph.add_node('start', start_workflow)
         self.graph.add_node('process_input', process_input)
-        self.graph.add_node('context_generator', context_generator)
-        self.graph.add_node('mermaid_generator', mermaid_generator)
-        self.graph.add_node('approval_node', approval_node)
+        self.graph.add_node('plan_smart_contract', plan_smart_contract)
+        self.graph.add_node('code_node', code_node)
+        self.graph.add_node('deploy_smart_contract', deploy_smart_contract)
+        self.graph.add_node('get_feedback', get_feedback)
         self.graph.add_node('end', end_workflow)
 
         self.graph.add_edge('start', 'process_input')
-        self.graph.add_edge('process_input', 'context_generator')
-        self.graph.add_edge('context_generator', 'mermaid_generator')
-        self.graph.add_edge('mermaid_generator', 'approval_node')
-        self.graph.add_conditional_edges('approval_node', approval_modifier)
+        self.graph.add_edge('process_input', 'plan_smart_contract')
+        
+        self.graph.add_conditional_edges('plan_smart_contract', plan_approval_modifier)
+        
+        self.graph.add_conditional_edges('code_node', code_approval_modifier)
+
+        self.graph.add_edge('deploy_smart_contract', 'get_feedback')
+        self.graph.add_edge('get_feedback', 'end')
 
         self.graph.set_entry_point('start')
 

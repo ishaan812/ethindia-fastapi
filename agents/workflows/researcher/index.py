@@ -1,4 +1,5 @@
 import json
+import os
 from typing import Annotated, List, Literal, Optional, TypedDict
 from agents.workflows.researcher.nodes import usecase_buffer, usecase_generator, usecase_modifier, end_workflow,  start_workflow, process_input
 from fastapi import HTTPException
@@ -14,6 +15,7 @@ class WorkflowState(TypedDict):
     mermaid_input: str
     altered_mermaid: str
     options: list[dict]
+    output: dict
     finished: bool
     
 
@@ -26,6 +28,8 @@ class ResearchWorkflow(WorkflowInterface):
             interrupt_before=["process_input", "usecase_buffer"],
             checkpointer=Checkpointer,
         )
+        # self._save_workflow_diagram(os.path.dirname(__file__))
+
 
     def _initialize_graph(self):
         """Setup the state graph for the workflow process."""

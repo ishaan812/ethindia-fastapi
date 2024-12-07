@@ -1,20 +1,17 @@
 
-import base64
-from io import BytesIO
 import json
-import time
-from PyPDF2 import PdfReader
-from duckduckgo_search import DDGS
 from fastapi import HTTPException
 from langchain_core.messages import BaseMessage
 from agents.constants.ai_models import chat_json
-from agents.constants.prompts import MERMAID_GENERATION_SYSTEM_PROMPT, QUERY_GENERATION_SYSTEM_PROMPT
+from agents.constants.prompts import PLAN_SMART_CONTRACT_CREATION, SOLIDITY_CODE_GENERATION_SYSTEM_PROMPT
+
+
 
 
 def start_workflow(state):
     return {
         "messages": [
-            BaseMessage(content="Hey, I'm Morgan, your AI Business Analyst. Let me help you map your business out and seperate it into different compoents to modularise and help make a plan to bring you onchain.",
+            BaseMessage(content="Yo, I'm Kanye, I’m the blockchain Yeezy, contracts stay breezy—code so tight, even bugs get queasy. Let's get started on your project.",
                         role="system", type="text")
         ]
     }
@@ -22,60 +19,76 @@ def start_workflow(state):
 def process_input(state):
     messages = state['messages']
     user_input = messages[-1]
-    if user_input.type == "file":
-        file_data = base64.b64decode(user_input.file)
-        pdf_file = BytesIO(file_data)
-        reader = PdfReader(pdf_file)
-        extracted_text = "".join(page.extract_text()
-                                 for page in reader.pages)
-        if not extracted_text.strip():
-            raise ValueError("Failed to extract text from the PDF.")
+    return {"usecase": json.loads(user_input.content)}
 
-        parsed_message = BaseMessage(
-            type='PRD', content=extracted_text, role="system")
-        return {"messages": parsed_message}
-    
-    return {"messages": messages, "user_prompt": user_input.content, "company_name": user_input.content}
 
-def context_generator_with_retry(queries) -> str:
-    context = ""
-    max_retries = 5  # Maximum number of retries
-    retry_delay = 2  # Delay (in seconds) before retrying
+def plan_smart_contract(state):
+    usecase = state['usecase']
+    plan_messages = state.get("plan_messages", [])
+    plan = state.get("plan", "")
+    print("recieved plan_messages")
+    if len(plan_messages) == 0:
+        plan_messages = [
+            {"role": "system", "content": PLAN_SMART_CONTRACT_CREATION },
+            {"role": "human", "content": "Usecase: " + json.dumps(usecase)}
+        ]
+    else:
+        messages = state['messages']
+        user_input = messages[-1]
+        plan_messages.append({"role": "system", "content": json.dumps(plan), "type": "text"})
+        plan_messages.append({"role": "human", "content": user_input.content, "type": "text"})
+        print("appended plan_messages", plan_messages)
 
-    for query in queries:
-        retries = 0
-        while retries < max_retries:
-            try:
-                # Attempt to get the response for the query
-                response = DDGS().text(query, max_results=3)
-                context += f"{response}\n"
-                break  # Break out of the retry loop if successful
-            except Exception as e:
-                if "RateLimited" in str(e):
-                    retries += 1
-                    print(f"Rate limited, retrying... Attempt {retries}/{max_retries}")
-                    time.sleep(retry_delay * retries)  # Exponential backoff (retry_delay increases with each attempt)
-                else:
-                    print(f"An error occurred: {e}")
-                    break  # If the error isn't rate-limiting, break out of the loop
-    
-    return context
 
-def context_generator(state):
-    user_prompt = state['user_prompt']
     try:
-        response = chat_json.invoke(
-            [
-                {"role": "system", "content": QUERY_GENERATION_SYSTEM_PROMPT},
-                {"role": "human", "content": user_prompt}
-            ]
-        )
+        response = chat_json.invoke(plan_messages)
         content = response.content
         if not content:
             raise HTTPException(
                 status_code=500, detail="Failed to extract style details")
 
-        # Parse JSON response
+        try:
+            res = json.loads(content)
+        except json.JSONDecodeError as e:
+            raise HTTPException(
+                status_code=500, detail=f"Failed to parse JSON: {str(e)}")
+    except Exception as e:
+        raise ValueError("Failed to generate plan.")
+    return {
+        "messages": [
+            BaseMessage(content="Yo, here’s the plan for the smart contract, let me know if it’s fire or if we need to tweak it. You got thoughts, throw ‘em in. Let’s make this legendary. Type continue to proceed.",
+                        role="system", type="text"),
+            BaseMessage(content=json.dumps(res.get("plan", "")), role="system", type="text")
+        ],
+        "plan": res.get("plan", ""),
+        "plan_messages": plan_messages
+    }
+
+
+def code_node(state):
+    messages = state['messages']
+    user_input = messages[-1]
+    generated_code = state.get("generated_code", "")
+    final_plan = state["plan"]
+    code_messages = state.get("code_messages", [])
+    if len(code_messages) == 0:
+        code_messages = [
+            {"role": "system", "content": SOLIDITY_CODE_GENERATION_SYSTEM_PROMPT},
+            {"role": "human", "content": "Final Plan: " + json.dumps(final_plan)}
+        ]
+    else:
+        messages = state['messages']
+        user_input = messages[-1]
+        code_messages.append({"role": "system", "content": json.dumps(generated_code)})
+        code_messages.append({"role": "human", "content": user_input.content})
+
+    try:
+        response = chat_json.invoke(code_messages)
+        content = response.content
+        if not content:
+            raise HTTPException(
+                status_code=500, detail="Failed to generate code.")
+
         try:
             res = json.loads(content)
         except json.JSONDecodeError as e:
@@ -83,74 +96,39 @@ def context_generator(state):
                 status_code=500, detail=f"Failed to parse JSON: {str(e)}")
     except Exception as e:
         raise ValueError("Failed to generate queries from the user prompt.")
-
-    queries = res.get("queries", [])
-    context = context_generator_with_retry(queries)
     return {
         "messages": [
-            BaseMessage(content="Searching the web for more information based on the queries generated...",
-                        role="tool", type="text")
+            BaseMessage(content="Yo, here’s the code, let me know if it’s fire or if we need to tweak it. You got thoughts, throw ‘em in. Let’s make this legendary. Type ``continue`` to deploy it on the chain.",
+                        role="system", type="text"),
+            BaseMessage(content=json.dumps(res.get("plan", "")), role="system", type="text")
         ],
-        "context": context
-    }
+        "generated_code": res.get('code', ''),
+        "code_messages": code_messages
+    }    
 
-    # Run the agent to get queries
+def deploy_smart_contract(state):
+    pass
 
-def mermaid_generator(state):
-    context = state['context']
-    company_name = state['company_name']
-    try:
-        response = chat_json.invoke(
-            [
-                {"role": "system", "content": MERMAID_GENERATION_SYSTEM_PROMPT},
-                {"role": "human", "content": company_name},
-                {"role": "human", "content": context}
-            ]
-        )
-        content = response.content
-        if not content:
-            raise HTTPException(
-                status_code=500, detail="Failed to extract style details")
-        # Parse JSON response
-        try:
-            res = json.loads(content)
-        except json.JSONDecodeError as e:
-            raise HTTPException(
-                status_code=500, detail=f"Failed to parse JSON: {str(e)}")
-    except Exception as e:
-        raise ValueError("Failed to generate mermaid diagram from the user prompt.")
-    print(res)
-    return {
-        "messages": [
-            BaseMessage(content="I have generated a mermaid diagram based on the queries you provided. Please review it and let me know if you would like to proceed.",
-                        expect_user_response=True, role="system", type="text")
-        ],
-        "mermaid_diagram": res.get("mermaid_diagram_string")
-    }
-
-def approval_node(state):
-    return {
-        "messages": [
-            BaseMessage(content="Do you approve of the mermaid diagram I generated?",
-                        expect_user_response=True, role="system", type="text")
-        ]
-    }
+def get_feedback(state):
+    pass
 
 def end_workflow(state):
-    return {
-        "messages": [
-            BaseMessage(content="Thanks! Its been a pleasure working with you, you can now talk to my colleague Clyde",
-                        role="system", type="text")
-        ]
-    }
+    pass
 
 # Edges
 
-def approval_modifier(state):
+def plan_approval_modifier(state):
     messages = state['messages']
     user_input = messages[-1]
-    if user_input.content.lower() == "yes":
-        # return {"messages": [BaseMessage(content="Thanks! Its been a pleasure working with you, you can now talk to my colleague Clyde", role="system", type="text")]}
-        return "end_node"
+    if user_input.content.lower() == "continue":
+        return "code_node"
+    else:
+        return "plan_smart_contract"
+
+def code_approval_modifier(state):
+    messages = state['messages']
+    user_input = messages[-1]
+    if user_input.content.lower() == "continue":
+        return "deploy_smart_contract"
     else :
-        return "context_generator"
+        return "code_node"

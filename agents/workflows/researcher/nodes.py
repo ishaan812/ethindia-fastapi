@@ -111,6 +111,7 @@ def usecase_buffer(state):
                 BaseMessage(content="Nice, good choice! you should continue to talk to Kanye now to figure out how you can embed this, he's our tech guy!", type= "text", role="system")
             ],
             "altered_mermaid": res.get("mermaid_diagram_string"),
+            "output": options[int(user_input.content)], 
             "finished": True
         }
 

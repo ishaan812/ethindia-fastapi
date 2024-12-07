@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv, find_dotenv
 from routes.workflow_routes import router as workflow_router
+from routes.stream_routes import router as stream_router
 
 
 # Initialize the FastAPI app
@@ -26,6 +27,7 @@ start_time = time.time()
 
 # Include workflow router
 app.include_router(workflow_router, prefix="/workflow", tags=["Workflow"])
+app.include_router(stream_router, prefix="/stream", tags=["Stream"])
 
 # Root endpoint
 @app.get("/")
