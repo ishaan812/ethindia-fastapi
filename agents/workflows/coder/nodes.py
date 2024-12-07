@@ -6,8 +6,6 @@ from agents.constants.ai_models import chat_json
 from agents.constants.prompts import PLAN_SMART_CONTRACT_CREATION, SOLIDITY_CODE_GENERATION_SYSTEM_PROMPT
 
 
-
-
 def start_workflow(state):
     return {
         "messages": [

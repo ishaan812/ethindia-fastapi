@@ -15,8 +15,8 @@ Please provide the queries in the following JSON format:
 
 MERMAID_GENERATION_SYSTEM_PROMPT = '''
 Create a colourful and intuitive,high level Mermaid BPMN diagram for a company that captures key business processes, various stakeholders, departments, and systems. 
-Illustrate the flow of tasks, key dependencies between departments, showing how each process supports others.
-
+Illustrate the flow of tasks, key dependencies between departments, showing how each process supports others. Structure the graph in a tree structure.
+In the mermaid string dont add mermaid at the start or anything, just output mermaid graph as a string.
 Please provide the diagram in the following JSON format:
 {
   "mermaid_diagram_string": "..."
