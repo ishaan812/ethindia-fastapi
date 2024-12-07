@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+my_seed.json
+
 # C extensions
 *.so
 

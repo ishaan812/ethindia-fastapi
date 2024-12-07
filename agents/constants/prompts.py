@@ -101,3 +101,14 @@ Please provide the code in the following JSON format:
   "code": "..."
 }
 '''
+
+GET_TOKEN_NAME_SYSTEM_PROMPT = '''
+Suggest a name for a coin to be generated based on the generated code given below.
+Please provide the name in the following JSON format:
+{
+  "token_name": "...",
+  "token_abbreviation": "3 letter abbreviation"
+}
+'''
+
+ 

@@ -3,7 +3,8 @@ import json
 from fastapi import HTTPException
 from langchain_core.messages import BaseMessage
 from agents.constants.ai_models import chat_json
-from agents.constants.prompts import PLAN_SMART_CONTRACT_CREATION, SOLIDITY_CODE_GENERATION_SYSTEM_PROMPT
+from agents.constants.prompts import GET_TOKEN_NAME_SYSTEM_PROMPT, PLAN_SMART_CONTRACT_CREATION, SOLIDITY_CODE_GENERATION_SYSTEM_PROMPT
+from agents.constants.cdp import create_token, fetch_wallet
 
 
 def start_workflow(state):
@@ -102,15 +103,58 @@ def code_node(state):
     }    
 
 def deploy_smart_contract(state):
-    pass
+    generated_code = state["generated_code"]
+    try:
+        response = chat_json.invoke([
+            {"role": "system", "content": GET_TOKEN_NAME_SYSTEM_PROMPT},
+            {"role": "human", "content": generated_code}
+        ])
+        content = response.content
+        if not content:
+            raise HTTPException(
+                status_code=500, detail="Failed to generate code.")
+
+        try:
+            res = json.loads(content)
+        except json.JSONDecodeError as e:
+            raise HTTPException(
+                status_code=500, detail=f"Failed to parse JSON: {str(e)}")
+    except Exception as e:
+        raise ValueError("Failed to generate queries from the user prompt.")
+    wallet_id = state.get("wallet_id", "")
+    token_name = res.get("token_name", "")
+    token_abbreviation = res.get("token_abbreviation", "")
+    fetched_wallet = fetch_wallet(wallet_id=wallet_id)
+    output, contract_address = create_token(fetched_wallet, token_name, token_abbreviation, 1000000)
+    return {
+        "messages": [
+            BaseMessage(content=output, role="system", type="tool"),
+            BaseMessage(content="Yo, I have deployed the smart contract on this transaction hash.",
+                        role="system", type="text")
+        ],
+        "generated_code": generated_code,
+        "token_name": token_name,
+        "token_abbreviation": token_abbreviation,
+        "contract_address": contract_address
+    }
 
 def get_feedback(state):
-    pass
+    messages = state['messages']
+    user_input = messages[-1]
+    return {
+        "messages": [
+            BaseMessage(content="Yo, I hope you had good time fam. Let me know if you liked working with us. Peace out.",
+                        role="system", type="text")
+        ]
+    }
 
 def end_workflow(state):
-    pass
-
-# Edges
+    return {
+        "messages": [
+            BaseMessage(content="Thanks! Its been a real pleasure working with you",
+                        role="system", type="text")
+        ]
+    }
 
 def plan_approval_modifier(state):
     messages = state['messages']

@@ -9,9 +9,10 @@ from agents.utils.helpers import stripped_uuid4
 from agents.workflows.index import WorkflowInterface
 from operator import add
 from agents.workflows.coder.nodes import code_approval_modifier, code_node, deploy_smart_contract, end_workflow, get_feedback, plan_approval_modifier, plan_smart_contract, start_workflow, process_input
-
+from agents.constants.cdp import fetch_wallet
 
 class WorkflowState(TypedDict):
+    wallet_id: str
     messages: Annotated[list, add_messages]
     usecase: str
     feature_list: list[str]
@@ -19,17 +20,20 @@ class WorkflowState(TypedDict):
     code_messages: List
     generated_code: str
     plan: dict
+    token_name: str
+    token_abbreviation: str
+    contract_address: str
 
 
 class CoderWorkflow(WorkflowInterface):
     def __init__(self, Checkpointer):
+        self.wallet_id = "ef94618f-89c7-4123-bb87-684cb712a99b"
         self.graph = StateGraph(WorkflowState)
         self._initialize_graph()
         self.workflow_instance = self.graph.compile(
-            interrupt_after=["start", "plan_smart_contract", "code_node"],
+            interrupt_after=["start", "plan_smart_contract", "code_node", "get_feedback"],
             checkpointer=Checkpointer,
         )
-        # self._save_workflow_diagram(os.path.dirname(__file__))
 
     def _initialize_graph(self):
         """Setup the state graph for the workflow process."""
@@ -61,6 +65,7 @@ class CoderWorkflow(WorkflowInterface):
             initial_message = BaseMessage(content=json_message.get("content", {}), type=json_message.get(
             "type", ""), role=json_message.get("role", ""), file=json_message.get("file", ""))
             initial_state = WorkflowState(
+                wallet_id=self.wallet_id,
                 messages=[initial_message],
                 elementDOM=None,
                 intent=[],
@@ -74,6 +79,7 @@ class CoderWorkflow(WorkflowInterface):
             return thread_id, latest_event
         else:
             initial_state = WorkflowState(
+                wallet_id=self.wallet_id,
                 messages=[],
                 elementDOM=None,
                 intent=[],
