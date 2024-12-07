@@ -100,7 +100,6 @@ def code_node(state):
         "messages": [
             BaseMessage(content="Yo, here’s the code, let me know if it’s fire or if we need to tweak it. You got thoughts, throw ‘em in. Let’s make this legendary. Type ``continue`` to deploy it on the chain.",
                         role="system", type="text"),
-            BaseMessage(content=json.dumps(res.get("plan", "")), role="system", type="text")
         ],
         "generated_code": res.get('code', ''),
         "code_messages": code_messages
