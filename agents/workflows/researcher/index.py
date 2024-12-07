@@ -12,6 +12,7 @@ from agents.workflows.index import WorkflowInterface
 class WorkflowState(TypedDict):
     messages: Annotated[list, add_messages]
     mermaid_input: str
+    altered_mermaid: str
     options: list[dict]
     finished: bool
     

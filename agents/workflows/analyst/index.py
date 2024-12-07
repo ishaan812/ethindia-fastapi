@@ -75,6 +75,8 @@ class AnalystWorkflow(WorkflowInterface):
                 updated_style={},
                 updated_content=""
             )
+            for event in self.workflow_instance.stream(initial_state, config, stream_mode="values"):
+                latest_event = event
             latest_event = None
             return thread_id, latest_event
 

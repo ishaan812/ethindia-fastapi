@@ -14,7 +14,7 @@ Please provide the queries in the following JSON format:
 
 
 MERMAID_GENERATION_SYSTEM_PROMPT = '''
-Create a Mermaid BPMN diagram for a company that captures key business processes, various stakeholders, departments, and systems. 
+Create a colourful and intuitive, Mermaid BPMN diagram for a company that captures key business processes, various stakeholders, departments, and systems. 
 Illustrate the flow of tasks, key dependencies between departments, showing how each process supports others.
 
 Please provide the diagram in the following JSON format:
@@ -34,11 +34,33 @@ Provide the list in the following JSON format, only use tokenisation, nfts, defi
       "usecase": "...",
       "description": "...",
       "technology_name": "...",
+      "department_it_will_improve": "",
       "companies": [
         "...
       ]
     }
     ...
   ]
+}
+'''
+
+
+ALTER_MERMAID_GENERATION_SYSTEM_PROMPT = '''
+You are an amazing diagram drawer. I will pass you mermaid string, I want you to alter the mermaid diagram.
+Based on the improvement add it to the mermaid diagram. Send back to me in the same JSON format given below in the output.
+Input Format: {
+  "improvement": {
+      "usecase": "...",
+      "description": "...",
+      "technology_name": "...",
+      "department_it_will_improve": "",
+      "companies": [
+        "...
+      ]
+    }
+}
+
+Output_Format: {
+  "mermaid_diagram_string": "..."
 }
 '''

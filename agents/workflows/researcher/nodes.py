@@ -10,7 +10,7 @@ from duckduckgo_search import DDGS
 from fastapi import HTTPException
 from langchain_core.messages import BaseMessage
 from agents.constants.ai_models import chat_json
-from agents.constants.prompts import ANALYZE_MERMAID_GENERATION_SYSTEM_PROMPT, MERMAID_GENERATION_SYSTEM_PROMPT, QUERY_GENERATION_SYSTEM_PROMPT
+from agents.constants.prompts import ALTER_MERMAID_GENERATION_SYSTEM_PROMPT, ANALYZE_MERMAID_GENERATION_SYSTEM_PROMPT, MERMAID_GENERATION_SYSTEM_PROMPT, QUERY_GENERATION_SYSTEM_PROMPT
 
 
 def start_workflow(state):
@@ -66,26 +66,58 @@ def usecase_buffer(state):
     if user_input.content.lower() == "no":
         return {
             "messages": [
-                BaseMessage(content="Oki leme see what else I can think of if you dont like any of these", type= "text", role="system")
+                BaseMessage(content="Oki leme see what else I can think of if you dont like any of these. Select the one you like.", type= "text", role="system")
             ],
         }
     else:
+        mermaid_input = state.get('mermaid_input') 
+        options = state.get("options")
+        if not mermaid_input:
+            raise HTTPException(status_code=400, detail="Mermaid input is required")
+
+        try:
+            # Invoke the chat system with the Mermaid input
+            response = chat_json.invoke(
+                [
+                    {"role": "system", "content": ALTER_MERMAID_GENERATION_SYSTEM_PROMPT},
+                    {"role": "human", "content": json.dumps(options[int(user_input.content)]), "type": "text"},
+                    {"role": "human", "content": json.dumps(mermaid_input), "type": "text"}
+                ]
+            )
+
+            # Check if response content exists
+            content = response.content
+            if not content:
+                raise HTTPException(
+                    status_code=500, detail="Failed to extract style details"
+                )
+
+            # Parse JSON response
+            try:
+                res = json.loads(content)
+            except json.JSONDecodeError as e:
+                raise HTTPException(
+                    status_code=500, detail=f"Failed to parse JSON: {str(e)}"
+                )
+
+        except Exception as e:  # Catch all other exceptions
+            raise HTTPException(
+                status_code=500, detail=f"An unexpected error occurred: {str(e)}"
+            )
+        
+
         return {
             "messages": [
-                BaseMessage(content="Nice, you should talk to Kanye now to figure out how you can embed this, he's our tech guy!", type= "text", role="system")
+                BaseMessage(content="Nice, good choice! you should continue to talk to Kanye now to figure out how you can embed this, he's our tech guy!", type= "text", role="system")
             ],
-            "finished": True,
+            "altered_mermaid": res.get("mermaid_diagram_string"),
+            "finished": True
         }
 
 
 
 def end_workflow(state):
-    return {
-        "messages": [
-            BaseMessage(content="Thanks! Its been a pleasure working with you, you can now talk to my colleague Kanye",
-                        role="system", type="text")
-        ]
-    }
+    return state
 
 # Edges
 
