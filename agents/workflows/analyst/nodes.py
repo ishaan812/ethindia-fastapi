@@ -14,7 +14,7 @@ from agents.constants.prompts import MERMAID_GENERATION_SYSTEM_PROMPT, QUERY_GEN
 def start_workflow(state):
     return {
         "messages": [
-            BaseMessage(content="Hey, I'm Morgan, your AI Business Analyst. Let me help you map your business out and seperate it into different compoents to modularise and help make a plan to bring you onchain.",
+            BaseMessage(content="Hey, I'm Morgan, your AI Business Analyst. Let me help you map your business out and seperate it into different compoents to modularise and make a plan to bring you onchain.",
                         role="system", type="text")
         ]
     }
@@ -120,7 +120,7 @@ def mermaid_generator(state):
     return {
         "messages": [
             BaseMessage(content="I have generated a mermaid diagram based on the queries you provided. Please review it and let me know if you would like to proceed.",
-                        role="system", type="button")
+                        role="system", type="moveToResearcher")
         ],
         "mermaid_diagram": res.get("mermaid_diagram_string")
     }
