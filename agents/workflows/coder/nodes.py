@@ -26,7 +26,6 @@ def plan_smart_contract(state):
     usecase = state['usecase']
     plan_messages = state.get("plan_messages", [])
     plan = state.get("plan", "")
-    print("recieved plan_messages")
     if len(plan_messages) == 0:
         plan_messages = [
             {"role": "system", "content": PLAN_SMART_CONTRACT_CREATION },
@@ -37,7 +36,6 @@ def plan_smart_contract(state):
         user_input = messages[-1]
         plan_messages.append({"role": "system", "content": json.dumps(plan), "type": "text"})
         plan_messages.append({"role": "human", "content": user_input.content, "type": "text"})
-        print("appended plan_messages", plan_messages)
 
 
     try:
@@ -119,7 +117,7 @@ def end_workflow(state):
 def plan_approval_modifier(state):
     messages = state['messages']
     user_input = messages[-1]
-    if user_input.content.lower() == "continue":
+    if user_input.content.lower().contains("continue"):
         return "code_node"
     else:
         return "plan_smart_contract"
@@ -127,7 +125,7 @@ def plan_approval_modifier(state):
 def code_approval_modifier(state):
     messages = state['messages']
     user_input = messages[-1]
-    if user_input.content.lower() == "continue":
+    if user_input.content.lower().contains("continue"):
         return "deploy_smart_contract"
     else :
         return "code_node"

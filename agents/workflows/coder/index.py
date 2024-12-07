@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from langchain_core.messages import BaseMessage
 from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
-from agents.utils.helpers import is_json, stripped_uuid4
+from agents.utils.helpers import stripped_uuid4
 from agents.workflows.index import WorkflowInterface
 from operator import add
 from agents.workflows.coder.nodes import code_approval_modifier, code_node, deploy_smart_contract, end_workflow, get_feedback, plan_approval_modifier, plan_smart_contract, start_workflow, process_input
@@ -88,8 +88,6 @@ class CoderWorkflow(WorkflowInterface):
 
     def chat(self, thread_id: str, message: dict, file: Optional[str] = None):
         config = {"configurable": {"thread_id": thread_id}}
-        curr_state = self.workflow_instance.get_state(config)
-        print(curr_state)
         curr_state = self.workflow_instance.get_state(config)
         values = curr_state.values
         json_message = json.loads(message)

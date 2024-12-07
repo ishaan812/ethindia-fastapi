@@ -79,7 +79,15 @@ Plan an Ethereum smart contract by giving simple, noob-friendly bullet points. M
     
 Output in a JSON:
 {
-  "plan": []
+  "plan": { 
+    "goal": "...",
+    "main_features": ["...", "..."],
+    "target_users": ["...", "..."],
+    "important_info": ["...", "..."],
+    "actions": ["...", "..."],
+    "logs": ["...", "..."],
+    "safety": ["...", "..."]
+  }
 }
 '''
 

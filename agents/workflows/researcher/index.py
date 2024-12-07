@@ -83,7 +83,6 @@ class ResearchWorkflow(WorkflowInterface):
     def chat(self, thread_id: str, message: dict, file: Optional[str] = None):
         config = {"configurable": {"thread_id": thread_id}}
         curr_state = self.workflow_instance.get_state(config)
-        print(curr_state)
         curr_state = self.workflow_instance.get_state(config)
         values = curr_state.values
         json_message = json.loads(message)

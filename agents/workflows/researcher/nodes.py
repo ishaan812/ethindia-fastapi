@@ -11,6 +11,7 @@ from fastapi import HTTPException
 from langchain_core.messages import BaseMessage
 from agents.constants.ai_models import chat_json
 from agents.constants.prompts import ALTER_MERMAID_GENERATION_SYSTEM_PROMPT, ANALYZE_MERMAID_GENERATION_SYSTEM_PROMPT, MERMAID_GENERATION_SYSTEM_PROMPT, QUERY_GENERATION_SYSTEM_PROMPT
+from agents.utils.blogs import addBlogPost
 
 
 def start_workflow(state):
@@ -105,12 +106,17 @@ def usecase_buffer(state):
                 status_code=500, detail=f"An unexpected error occurred: {str(e)}"
             )
         
+        altered_image = res.get("mermaid_diagram_string")
+        addBlogPost(options[int(user_input.content)],altered_image)
+
+
+
 
         return {
             "messages": [
                 BaseMessage(content="Nice, good choice! you should continue to talk to Kanye now to figure out how you can embed this, he's our tech guy!", type= "text", role="system")
             ],
-            "altered_mermaid": res.get("mermaid_diagram_string"),
+            "altered_mermaid": altered_image,
             "output": options[int(user_input.content)], 
             "finished": True
         }
