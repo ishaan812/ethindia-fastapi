@@ -117,7 +117,7 @@ def end_workflow(state):
 def plan_approval_modifier(state):
     messages = state['messages']
     user_input = messages[-1]
-    if user_input.content.lower().contains("continue"):
+    if "continue" in user_input.content.lower():
         return "code_node"
     else:
         return "plan_smart_contract"
@@ -125,7 +125,7 @@ def plan_approval_modifier(state):
 def code_approval_modifier(state):
     messages = state['messages']
     user_input = messages[-1]
-    if user_input.content.lower().contains("continue"):
+    if "continue" in user_input.content.lower():
         return "deploy_smart_contract"
-    else :
+    else:
         return "code_node"
