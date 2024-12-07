@@ -54,7 +54,7 @@ def usecase_generator(state):
     return {
         "messages": [
             BaseMessage(content="Here are some usecases I think you might want to get onchain for",
-                        role="system", type="text")
+                        role="system", type="options")
         ],
         "options": res.get("ways", "")
     }
