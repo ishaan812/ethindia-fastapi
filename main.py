@@ -1,31 +1,33 @@
 import time
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 from routes.workflow_routes import router as workflow_router
-import os
 
-load_dotenv(dotenv_path=os.path.join(os.getcwd(), '.env'), override=True)
 
-os["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
-os["TAVILY_API_KEY"] = os.getenv("TAVILY_API_KEY")
-os["REPLICATE_API_KEY"] = os.getenv("REPLICATE_API_KEY")
-
+# Initialize the FastAPI app
 app = FastAPI()
 
+# Load environment variables from the .env file
+load_dotenv(override=True)
+
+# Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Allow requests from all origins
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
 )
 
+# Start time tracking
 start_time = time.time()
 
+# Include workflow router
 app.include_router(workflow_router, prefix="/workflow", tags=["Workflow"])
 
-
+# Root endpoint
 @app.get("/")
 def read_root():
     return {"Hello": "World"}

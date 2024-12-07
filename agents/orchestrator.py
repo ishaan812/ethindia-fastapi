@@ -14,7 +14,7 @@ class WorkflowOrchestrator:
             "analyst": self.AnalystWorkflow,
         }
 
-    def start(self, workflow_name: str, message: Optional[Union[dict, str]] = None):
+    def start(self, workflow_name: str, message: Optional[Union[dict, str, None]] = None):
         """Starts a workflow by name if available, else raises an HTTPException."""
         try:
             if workflow_name in self.agents:

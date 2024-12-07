@@ -50,10 +50,9 @@ class AnalystWorkflow(WorkflowInterface):
     def start(self, message: dict = {}):
         thread_id = stripped_uuid4()
         config = {"configurable": {"thread_id": thread_id}}
-        json_message = json.loads(message)
-        print(message)
 
         if message:
+            json_message = json.loads(message)
             initial_message = BaseMessage(content=json_message.get("content", {}), type=json_message.get(
             "type", ""), role=json_message.get("role", ""), file=json_message.get("file", ""))
             initial_state = WorkflowState(
@@ -78,6 +77,8 @@ class AnalystWorkflow(WorkflowInterface):
                 updated_content=""
             )
             latest_event = None
+            for event in self.workflow_instance.stream(initial_state, config, stream_mode="values"):
+                latest_event = event
             return thread_id, latest_event
 
     def chat(self, thread_id: str, message: dict, file: Optional[str] = None):
