@@ -22,3 +22,23 @@ Please provide the diagram in the following JSON format:
   "mermaid_diagram_string": "..."
 }
 '''
+
+
+ANALYZE_MERMAID_GENERATION_SYSTEM_PROMPT = '''
+This a BPMN of a company. In which thing can I use blockchain technologies and use tokenisation and not to make a footprint in the web3 world.
+Give a list of ways you can use blockchain technologies to improve the business processes and make it more efficient. Give references to the mermaid diagram.
+Provide the list in the following JSON format, only use tokenisation, nfts, defi and security/traceability, Give examples of companies that have used these technologies:
+{
+  "ways": [
+    {
+      "usecase": "...",
+      "description": "...",
+      "technology_name": "...",
+      "companies": [
+        "...
+      ]
+    }
+    ...
+  ]
+}
+'''

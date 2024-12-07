@@ -34,6 +34,13 @@ async def create_workflow(
                 workflowName, messageJson)
         else:
             threadId, state = workflow_orchestrator.start(workflowName)
+        
+        # if image:
+        #     image_content = await image.read()
+        #     encoded_image = base64.b64encode(image_content).decode('utf-8')
+        #     message_dict = {}
+        #     message_dict["image"] = encoded_image
+        #     threadId, state = workflow_orchestrator.start(workflow_name=workflowName, message=message_dict)
 
         if file:
             file_content = await file.read()

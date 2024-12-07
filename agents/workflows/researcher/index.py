@@ -1,55 +1,50 @@
 import json
 from typing import Annotated, List, Literal, Optional, TypedDict
+from agents.workflows.researcher.nodes import usecase_buffer, usecase_generator, usecase_modifier, end_workflow,  start_workflow, process_input
 from fastapi import HTTPException
 from langchain_core.messages import BaseMessage
 from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
 from agents.utils.helpers import is_json, stripped_uuid4
 from agents.workflows.index import WorkflowInterface
-import os
-from operator import add
-from agents.workflows.analyst.nodes import approval_modifier, approval_node, context_generator, end_workflow, mermaid_generator, start_workflow, process_input
 
 
 class WorkflowState(TypedDict):
     messages: Annotated[list, add_messages]
-    user_prompt: str
-    company_name: str
-    context: str
-    mermaid_diagram: str
-    file: any
+    mermaid_input: str
+    options: list[dict]
+    finished: bool
+    
 
 
-class AnalystWorkflow(WorkflowInterface):
+class ResearchWorkflow(WorkflowInterface):
     def __init__(self, Checkpointer):
         self.graph = StateGraph(WorkflowState)
         self._initialize_graph()
         self.workflow_instance = self.graph.compile(
-            interrupt_before=["process_input", "approval_node"],
+            interrupt_before=["process_input", "usecase_buffer"],
             checkpointer=Checkpointer,
         )
-        # self._save_workflow_diagram(os.path.dirname(__file__))
 
     def _initialize_graph(self):
         """Setup the state graph for the workflow process."""
         self.graph.add_node('start', start_workflow)
         self.graph.add_node('process_input', process_input)
-        self.graph.add_node('context_generator', context_generator)
-        self.graph.add_node('mermaid_generator', mermaid_generator)
-        self.graph.add_node('approval_node', approval_node)
+        self.graph.add_node('usecases_generator', usecase_generator)
+        self.graph.add_node("usecase_buffer", usecase_buffer)
         self.graph.add_node('end', end_workflow)
 
         self.graph.add_edge('start', 'process_input')
-        self.graph.add_edge('process_input', 'context_generator')
-        self.graph.add_edge('context_generator', 'mermaid_generator')
-        self.graph.add_edge('mermaid_generator', 'approval_node')
-        self.graph.add_conditional_edges('approval_node', approval_modifier)
+        self.graph.add_edge('process_input', 'usecases_generator')
+        self.graph.add_edge("usecases_generator", "usecase_buffer")
+        self.graph.add_conditional_edges('usecase_buffer', usecase_modifier)
 
         self.graph.set_entry_point('start')
 
     def start(self, message: dict = {}):
         thread_id = stripped_uuid4()
         config = {"configurable": {"thread_id": thread_id}}
+
         if message:
             json_message = json.loads(message)
             initial_message = BaseMessage(content=json_message.get("content", {}), type=json_message.get(
@@ -76,6 +71,8 @@ class AnalystWorkflow(WorkflowInterface):
                 updated_content=""
             )
             latest_event = None
+            for event in self.workflow_instance.stream(initial_state, config, stream_mode="values"):
+                latest_event = event
             return thread_id, latest_event
 
     def chat(self, thread_id: str, message: dict, file: Optional[str] = None):
