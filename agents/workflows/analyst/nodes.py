@@ -89,7 +89,7 @@ def context_generator(state):
     return {
         "messages": [
             BaseMessage(content="Searching the web for more information based on the queries generated...",
-                        role="tool", type="text")
+                        role="system", type="tool")
         ],
         "context": context
     }
