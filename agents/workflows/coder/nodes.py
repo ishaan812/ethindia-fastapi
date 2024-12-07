@@ -94,6 +94,8 @@ def context_generator(state):
         "context": context
     }
 
+    # Run the agent to get queries
+
 def mermaid_generator(state):
     context = state['context']
     company_name = state['company_name']
@@ -117,6 +119,7 @@ def mermaid_generator(state):
                 status_code=500, detail=f"Failed to parse JSON: {str(e)}")
     except Exception as e:
         raise ValueError("Failed to generate mermaid diagram from the user prompt.")
+    print(res)
     return {
         "messages": [
             BaseMessage(content="I have generated a mermaid diagram based on the queries you provided. Please review it and let me know if you would like to proceed.",
@@ -126,7 +129,12 @@ def mermaid_generator(state):
     }
 
 def approval_node(state):
-    return state
+    return {
+        "messages": [
+            BaseMessage(content="Do you approve of the mermaid diagram I generated?",
+                        expect_user_response=True, role="system", type="text")
+        ]
+    }
 
 def end_workflow(state):
     return {
@@ -142,6 +150,7 @@ def approval_modifier(state):
     messages = state['messages']
     user_input = messages[-1]
     if user_input.content.lower() == "yes":
+        # return {"messages": [BaseMessage(content="Thanks! Its been a pleasure working with you, you can now talk to my colleague Clyde", role="system", type="text")]}
         return "end_node"
     else :
         return "context_generator"
