@@ -22,6 +22,7 @@ class WorkflowState(TypedDict):
 
 class ResearchWorkflow(WorkflowInterface):
     def __init__(self, Checkpointer):
+        self.wallet_id = "facdbf29-1439-4a87-b2f6-f0360da57dc7"
         self.graph = StateGraph(WorkflowState)
         self._initialize_graph()
         self.workflow_instance = self.graph.compile(
